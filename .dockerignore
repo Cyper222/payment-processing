@@ -1,4 +1,4 @@
-# Only files required by the runtime and test Dockerfile stages enter the context.
+
 **
 !pyproject.toml
 !requirements.lock
@@ -13,7 +13,7 @@
 !tests/
 !tests/**
 
-# Exclude generated or sensitive files even inside allowed directories.
+
 **/__pycache__
 **/*.py[cod]
 **/*.egg-info
