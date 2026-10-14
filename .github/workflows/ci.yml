@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Build test image
+        run: docker compose -f compose.test.yml build tests
+
+      - name: Check formatting, lint and types
+        run: |
+          docker compose -f compose.test.yml run --rm --no-deps \
+            -e RUFF_CACHE_DIR=/tmp/ruff-cache \
+            -e MYPY_CACHE_DIR=/tmp/mypy-cache \
+            tests sh -c 'ruff check . && ruff format --check . && mypy src scripts'
+
+      - name: Run unit and integration tests
+        run: |
+          docker compose -f compose.test.yml up \
+            --abort-on-container-exit --exit-code-from tests
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose -f compose.test.yml logs --no-color
+
+      - name: Clean up test environment
+        if: always()
+        run: docker compose -f compose.test.yml down -v --remove-orphans

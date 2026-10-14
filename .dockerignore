@@ -1,0 +1,32 @@
+# Only files required by the runtime and test Dockerfile stages enter the context.
+**
+!pyproject.toml
+!requirements.lock
+!README.md
+!alembic.ini
+!src/
+!src/**
+!alembic/
+!alembic/**
+!scripts/
+!scripts/**
+!tests/
+!tests/**
+
+# Exclude generated or sensitive files even inside allowed directories.
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage*
+**/.DS_Store
+**/._*
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.log

@@ -1,0 +1,50 @@
+name: payment-processing-test
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: payments_test
+      POSTGRES_USER: payments_test
+      POSTGRES_PASSWORD: payments_test_password
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payments_test -d payments_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    hostname: rabbitmq-test
+    environment:
+      RABBITMQ_DEFAULT_USER: payments_test
+      RABBITMQ_DEFAULT_PASS: payments_test_password
+    tmpfs:
+      - /var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "su-exec", "rabbitmq", "rabbitmq-diagnostics", "-q", "check_protocol_listener", "amqp"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+
+  tests:
+    image: payment-processing:test
+    build:
+      context: .
+      target: test
+    init: true
+    environment:
+      DATABASE_URL: postgresql+asyncpg://payments_test:payments_test_password@postgres:5432/payments_test
+      RABBITMQ_URL: amqp://payments_test:payments_test_password@rabbitmq:5672/
+      INTEGRATION_DATABASE_URL: postgresql+asyncpg://payments_test:payments_test_password@postgres:5432/payments_test
+      INTEGRATION_RABBITMQ_URL: amqp://payments_test:payments_test_password@rabbitmq:5672/
+      API_KEY: test-api-key-only-not-for-production
+      WEBHOOK_ALLOWED_HOSTS: '["webhook-receiver", "localhost", "127.0.0.1"]'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && pytest -q -p no:cacheprovider"]
