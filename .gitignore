@@ -1,4 +1,3 @@
-# Local configuration and credentials
 .env
 .env.*
 !.env.example
@@ -9,7 +8,6 @@
 *.p12
 *.pfx
 
-# Virtual environments and Python build artifacts
 .venv/
 venv/
 env/
@@ -21,7 +19,6 @@ __pycache__/
 build/
 dist/
 
-# Test, coverage and analysis output
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -32,7 +29,6 @@ dist/
 coverage.xml
 htmlcov/
 
-# Local runtime data and scratch files
 *.log
 *.pid
 *.db
@@ -44,7 +40,6 @@ htmlcov/
 /tmp/
 /temp/
 
-# Editor and operating-system files
 .idea/
 .vscode/
 *.swp
